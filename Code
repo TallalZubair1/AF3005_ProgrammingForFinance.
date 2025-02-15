@@ -1,0 +1,171 @@
+import ipywidgets as widgets
+import matplotlib.pyplot as plt
+import numpy as np
+from IPython.display import display, HTML
+
+def check_loan_eligibility(employment_status, income, credit_score):
+    if employment_status == 'Unemployed':
+        return "❌ Loan Rejected: Applicant is unemployed."
+
+    if income < 50000:
+        return "❌ Loan Rejected: Minimum income requirement not met (PKR 50,000)."
+
+    if credit_score >= 750:
+        interest_rate = 5
+    elif 650 <= credit_score < 750:
+        interest_rate = 8
+    else:
+        return "❌ Loan Rejected: Credit score too low (< 650)."
+
+    return f"✅ Loan Approved! Interest Rate: {interest_rate}%"
+
+# Create interactive widgets
+employment_status = widgets.Dropdown(
+    options=['Employed', 'Unemployed'],
+    description='Employment:',
+    style={'description_width': 'initial'}
+)
+
+income = widgets.IntText(
+    description='Income (PKR):',
+    value=50000,
+    style={'description_width': 'initial'}
+)
+
+credit_score = widgets.IntSlider(
+    min=300, max=850, step=10, value=700,
+    description='Credit Score:',
+    style={'description_width': 'initial'}
+)
+
+output = widgets.Output()
+
+def on_submit(_):
+    with output:
+        output.clear_output()
+        result = check_loan_eligibility(employment_status.value, income.value, credit_score.value)
+        display(HTML(f'<h3>{result}</h3>'))
+
+submit_button = widgets.Button(description="Check Eligibility", button_style='success')
+submit_button.on_click(on_submit)
+
+display(employment_status, income, credit_score, submit_button, output)
+
+# Loan Repayment Tracker
+loan_amount = widgets.IntText(
+    description='Loan Amount (PKR):',
+    value=500000,
+    style={'description_width': 'initial'}
+)
+
+monthly_payment = widgets.IntText(
+    description='Monthly Payment (PKR):',
+    value=25000,
+    style={'description_width': 'initial'}
+)
+
+repayment_output = widgets.Output()
+
+def track_repayment(_):
+    with repayment_output:
+        repayment_output.clear_output()
+        balance = loan_amount.value
+        payment = monthly_payment.value
+
+        balances = []
+        months = []
+        month = 1
+        while balance > 0:
+            balances.append(balance)
+            months.append(month)
+            balance -= payment
+            if balance < 0:
+                balance = 0
+            month += 1
+
+        plt.figure(figsize=(8,5))
+        plt.plot(months, balances, marker='o', linestyle='-', color='b')
+        plt.xlabel("Months")
+        plt.ylabel("Remaining Balance (PKR)")
+        plt.title("Loan Repayment Schedule")
+        plt.grid()
+        plt.show()
+
+repay_button = widgets.Button(description="Track Repayment", button_style='info')
+repay_button.on_click(track_repayment)
+
+display(loan_amount, monthly_payment, repay_button, repayment_output)
+
+# Stock Price Monitoring
+stock_prices_input = widgets.Text(
+    description='Stock Prices:',
+    placeholder='Enter prices separated by commas',
+    style={'description_width': 'initial'}
+)
+
+stock_output = widgets.Output()
+
+def monitor_stocks(_):
+    with stock_output:
+        stock_output.clear_output()
+        try:
+            stock_prices = [float(p) if p.strip() else None for p in stock_prices_input.value.split(',')]
+            filtered_prices = [p for p in stock_prices if p is not None]
+
+            print("Tracking stock prices...")
+            for price in stock_prices:
+                if price is None:
+                    continue
+                print(f"Stock Price: PKR {price}")
+                if price >= 200:
+                    print("✅ Target reached! Sell the stock.")
+                    break
+
+            plt.figure(figsize=(8,5))
+            plt.plot(range(1, len(filtered_prices)+1), filtered_prices, marker='o', linestyle='-', color='p')
+            plt.xlabel("Days")
+            plt.ylabel("Stock Price (PKR)")
+            plt.title("Stock Price Trend")
+            plt.axhline(y=200, color='r', linestyle='--', label='Target Price (PKR 200)')
+            plt.legend()
+            plt.grid()
+            plt.show()
+        except ValueError:
+            print("Please enter valid numerical stock prices separated by commas.")
+
+track_button = widgets.Button(description="Track Stocks", button_style='warning')
+track_button.on_click(monitor_stocks)
+
+display(stock_prices_input, track_button, stock_output)
+
+# Currency Exchange Rate Tracker
+exchange_output = widgets.Output()
+
+def track_exchange_rate(_):
+    with exchange_output:
+        exchange_output.clear_output()
+        rate = 290
+        rates = []
+        days = []
+        day = 1
+        while rate <= 300:
+            rates.append(rate)
+            days.append(day)
+            if rate == 300:
+                print("✅ Target rate reached! Consider exchanging currency.")
+                break
+            rate += 1
+            day += 1
+
+        plt.figure(figsize=(8,5))
+        plt.plot(days, rates, marker='o', linestyle='-', color='purple')
+        plt.xlabel("Days")
+        plt.ylabel("Exchange Rate (PKR/USD)")
+        plt.title("Currency Exchange Rate Trend")
+        plt.grid()
+        plt.show()
+
+exchange_button = widgets.Button(description="Track Exchange Rate", button_style='primary')
+exchange_button.on_click(track_exchange_rate)
+
+display(exchange_button, exchange_output)
