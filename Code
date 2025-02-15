@@ -5,19 +5,19 @@ from IPython.display import display, HTML
 
 def check_loan_eligibility(employment_status, income, credit_score):
     if employment_status == 'Unemployed':
-        return "❌ Loan Rejected: Applicant is unemployed."
+        return " Loan Rejected: Applicant is unemployed."
 
     if income < 50000:
-        return "❌ Loan Rejected: Minimum income requirement not met (PKR 50,000)."
+        return "Loan Rejected: Minimum income requirement not met (PKR 50,000)."
 
     if credit_score >= 750:
         interest_rate = 5
     elif 650 <= credit_score < 750:
         interest_rate = 8
     else:
-        return "❌ Loan Rejected: Credit score too low (< 650)."
+        return " Loan Rejected: Credit score too low (< 650)."
 
-    return f"✅ Loan Approved! Interest Rate: {interest_rate}%"
+    return f"Loan Approved! Interest Rate: {interest_rate}%"
 
 # Create interactive widgets
 employment_status = widgets.Dropdown(
@@ -118,7 +118,7 @@ def monitor_stocks(_):
                     continue
                 print(f"Stock Price: PKR {price}")
                 if price >= 200:
-                    print("✅ Target reached! Sell the stock.")
+                    print(" Target reached! Sell the stock.")
                     break
 
             plt.figure(figsize=(8,5))
@@ -152,7 +152,7 @@ def track_exchange_rate(_):
             rates.append(rate)
             days.append(day)
             if rate == 300:
-                print("✅ Target rate reached! Consider exchanging currency.")
+                print("Target rate reached! Consider exchanging currency.")
                 break
             rate += 1
             day += 1
