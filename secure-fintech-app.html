@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure FinTech Portal</title>
+    <!-- 1. Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Basic font styling */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide views by default */
+        .view {
+            display: none;
+        }
+        /* Simple transitions for notifications */
+        #notification {
+            transition: opacity 0.5s, transform 0.5s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12">
+
+    <div class="w-full max-w-4xl mx-auto p-4">
+        
+        <!-- Notification Area -->
+        <div id="notification" class="fixed top-5 right-5 w-auto max-w-sm p-4 rounded-lg shadow-lg text-white opacity-0 transform -translate-y-10 z-50">
+            <span id="notification-message"></span>
+        </div>
+
+        <!-- 
+          ============================================================
+          LOGIN VIEW
+          (Tests: 1, 4, 16, 20)
+          ============================================================
+        -->
+        <div id="login-view" class="view bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">FinTech Portal Login</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="login-username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="login-username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Login
+                </button>
+            </form>
+            <p class="text-center text-sm text-gray-600 mt-4">
+                No account? <a href="#" id="show-register" class="font-medium text-indigo-600 hover:text-indigo-500">Register here</a>
+            </p>
+        </div>
+
+        <!-- 
+          ============================================================
+          REGISTER VIEW
+          (Tests: 2, 3, 11, 13, 15, 20)
+          ============================================================
+        -->
+        <div id="register-view" class="view bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create Account</h2>
+            <form id="register-form">
+                <div class="mb-4">
+                    <label for="register-username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="register-username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    <p class="text-xs text-gray-500 mt-1">Cannot contain special characters like &lt; or &gt;.</p>
+                </div>
+                <div class="mb-4">
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="register-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    <p class="text-xs text-gray-500 mt-1">Min 8 chars, 1 number, 1 symbol (e.g., !@#$).</p>
+                </div>
+                <div class="mb-6">
+                    <label for="register-confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Register
+                </button>
+            </form>
+            <p class="text-center text-sm text-gray-600 mt-4">
+                Already have an account? <a href="#" id="show-login" class="font-medium text-indigo-600 hover:text-indigo-500">Login here</a>
+            </p>
+        </div>
+
+        <!-- 
+          ============================================================
+          MAIN APP VIEW (Logged-in users)
+          (Tests: 5, 6, 8, 10, 12, 14, 19)
+          ============================================================
+        -->
+        <div id="app-view" class="view w-full">
+            <!-- Header/Navbar -->
+            <nav class="bg-white p-4 rounded-lg shadow-md mb-6 flex justify-between items-center">
+                <h1 class="text-xl font-bold text-indigo-600">Secure FinTech Dashboard</h1>
+                <div>
+                    <span id="welcome-user" class="text-gray-700 mr-4"></span>
+                    <button id="logout-button" class="bg-red-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Logout (Test 6)
+                    </button>
+                </div>
+            </nav>
+
+            <!-- App Content Area -->
+            <div class="flex flex-col md:flex-row">
+                <!-- Sidebar -->
+                <aside class="w-full md:w-1/4 mb-6 md:mr-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <ul class="space-y-2">
+                            <li><a href="#" class="block app-tab-link font-medium text-indigo-600" data-tab="dashboard-content">Dashboard</a></li>
+                            <li><a href="#" class="block app-tab-link text-gray-700 hover:text-indigo-600" data-tab="profile-content">Profile Update (Test 14)</a></li>
+                            <li><a href="#" class="block app-tab-link text-gray-700 hover:text-indigo-600" data-tab="encrypt-content">Encrypt/Decrypt (Test 18)</a></li>
+                            <li><a href="#" class="block app-tab-link text-gray-700 hover:text-indigo-600" data-tab="logs-content">Audit Logs</a></li>
+                            <li><a href="#" class="block app-tab-link text-gray-700 hover:text-indigo-600" data-tab="testing-content">Security Tests</a></li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="w-full md:w-3/4">
+                    
+                    <!-- Dashboard Content -->
+                    <div id="dashboard-content" class="app-content bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Make a Transaction</h3>
+                        <form id="transaction-form">
+                            <div class="mb-4">
+                                <label for="trans-amount" class="block text-sm font-medium text-gray-700">Amount (Test 12)</label>
+                                <input type="number" id="trans-amount" placeholder="100.00" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div class="mb-4">
+                                <label for="trans-desc" class="block text-sm font-medium text-gray-700">Description (Test 10, 19)</label>
+                                <input type="text" id="trans-desc" maxlength="100" placeholder="e.g., Coffee, groceries, 😃" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                Submit Transaction
+                            </button>
+                        </form>
+
+                        <hr class="my-6">
+
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">File Upload (Test 8)</h3>
+                        <form id="upload-form">
+                            <label for="file-upload" class="block text-sm font-medium text-gray-700">Upload a statement (.txt or .pdf only)</label>
+                            <input type="file" id="file-upload" class="mt-1 block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-indigo-50 file:text-indigo-700
+                                hover:file:bg-indigo-100">
+                        </form>
+                    </div>
+
+                    <!-- Profile Content -->
+                    <div id="profile-content" class="app-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Update Your Profile (Test 14)</h3>
+                        <form id="profile-form">
+                            <div class="mb-4">
+                                <label for="profile-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email" id="profile-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="profile-bio" class="block text-sm font-medium text-gray-700">Bio (Test 3)</label>
+                                <textarea id="profile-bio" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                            </div>
+                            <button type="submit" class="bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Encrypt/Decrypt Content -->
+                    <div id="encrypt-content" class="app-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Secure Note (Test 18)</h3>
+                        <p class="text-sm text-gray-600 mb-4">Uses AES-GCM to encrypt a note with your login password. The encrypted data is stored locally. (Also see Test 7 for password hashing).</p>
+                        <div class="mb-4">
+                            <label for="encrypt-note" class="block text-sm font-medium text-gray-700">Your Private Note</label>
+                            <textarea id="encrypt-note" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter sensitive data..."></textarea>
+                        </div>
+                        <button id="encrypt-button" class="bg-blue-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-blue-700">
+                            Encrypt & Save
+                        </button>
+                        <button id="decrypt-button" class="bg-gray-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-700 ml-2">
+                            Load & Decrypt
+                        </button>
+                    </div>
+
+                    <!-- Audit Logs Content -->
+                    <div id="logs-content" class="app-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">User Activity Logs</h3>
+                        <div id="logs-list" class="h-64 overflow-y-auto bg-gray-50 p-3 rounded border border-gray-200">
+                            <!-- Logs will be injected here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Testing Content -->
+                    <div id="testing-content" class="app-content hidden bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Manual Security Tests</h3>
+                        <p class="text-sm text-gray-600 mb-4">Buttons to help with manual testing.</p>
+                        <button id="test-error-button" class="bg-yellow-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-yellow-600">
+                            Test Error Handling (Test 9, 17)
+                        </button>
+                        <p class="text-xs text-gray-500 mt-2">Forces a divide-by-zero style error in a try...catch block.</p>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+      ================================================================
+      JAVASCRIPT LOGIC
+      This is the "back-end" of your app, simulated in the browser.
+      ================================================================
+    -->
+    <script type="module">
+        // --- NOTE ---
+        // This is a CLIENT-SIDE simulation. In a real FinTech app:
+        // - All logic (hashing, validation, sessions) would be on a SECURE SERVER (e.g., Node.js, Python, Java).
+        // - Data would be in a SECURE DATABASE (e.g., PostgreSQL, MySQL).
+        // - `localStorage` and `sessionStorage` are NOT secure for sensitive data, but we use them here to *simulate* a database.
+        
+        // --- DOM Elements ---
+        const views = {
+            login: document.getElementById('login-view'),
+            register: document.getElementById('register-view'),
+            app: document.getElementById('app-view'),
+        };
+        const appContents = {
+            dashboard: document.getElementById('dashboard-content'),
+            profile: document.getElementById('profile-content'),
+            encrypt: document.getElementById('encrypt-content'),
+            logs: document.getElementById('logs-content'),
+            testing: document.getElementById('testing-content'),
+        };
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
+
+        // --- Constants ---
+        const DB_USERS_KEY = 'fintech_users_db';
+        const DB_LOGS_KEY = 'fintech_logs_db';
+        // Set to 1 minute (60 * 1000) for easy testing of Test 5. 
+        // The prompt says 5 minutes (5 * 60 * 1000).
+        const SESSION_TIMER_MS = 60 * 1000; 
+        let sessionTimer;
+
+        // --- Utility Functions ---
+
+        /**
+         * Initializes the 'database' (localStorage) if it doesn't exist.
+         */
+        function initDB() {
+            if (!localStorage.getItem(DB_USERS_KEY)) {
+                localStorage.setItem(DB_USERS_KEY, JSON.stringify({}));
+            }
+            if (!localStorage.getItem(DB_LOGS_KEY)) {
+                localStorage.setItem(DB_LOGS_KEY, JSON.stringify([]));
+            }
+        }
+
+        /**
+         * Reads the entire user database from localStorage.
+         * @returns {object} The user database object.
+         */
+        function getUserDB() {
+            return JSON.parse(localStorage.getItem(DB_USERS_KEY));
+        }
+
+        /**
+         * Saves the user database to localStorage.
+         * @param {object} db - The user database object to save.
+         */
+        function saveUserDB(db) {
+            localStorage.setItem(DB_USERS_KEY, JSON.stringify(db));
+        }
+
+        /**
+         * Adds a log entry to the audit log. (Feature: Audit / Activity Logs)
+         * @param {string} action - The action performed.
+         * @param {string} [user='system'] - The user who performed the action.
+         */
+        function addLog(action, user = 'system') {
+            try {
+                const logs = JSON.parse(localStorage.getItem(DB_LOGS_KEY));
+                const logEntry = {
+                    timestamp: new Date().toISOString(),
+                    user,
+                    action
+                };
+                logs.push(logEntry);
+                localStorage.setItem(DB_LOGS_KEY, JSON.stringify(logs));
+            } catch (error) {
+                console.error("Failed to write to audit log:", error);
+            }
+        }
+
+        /**
+         * Displays a notification message.
+         * @param {string} message - The message to display.
+         * @param {'success' | 'error' | 'info'} [type='error'] - The type of notification.
+         */
+        function showNotification(message, type = 'error') {
+            notificationMessage.textContent = message;
+            notification.classList.remove('bg-red-500', 'bg-green-500', 'bg-blue-500', 'opacity-0', '-translate-y-10');
+            
+            if (type === 'success') {
+                notification.classList.add('bg-green-500');
+            } else if (type === 'info') {
+                notification.classList.add('bg-blue-500');
+            } else {
+                notification.classList.add('bg-red-500');
+            }
+            
+            notification.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                notification.classList.add('opacity-0', '-translate-y-10');
+            }, 3000);
+        }
+
+        /**
+         * Hides all views and shows the specified view.
+         * @param {'login' | 'register' | 'app'} viewId - The ID of the view to show.
+         */
+        function showView(viewId) {
+            Object.values(views).forEach(view => view.style.display = 'none');
+            if (views[viewId]) {
+                views[viewId].style.display = 'block';
+            }
+        }
+        
+        /**
+         * Hides all app content tabs and shows the specified tab.
+         * @param {string} tabId - The ID of the content tab to show.
+         */
+        function showAppTab(tabId) {
+            // Hide all content
+            Object.values(appContents).forEach(content => content.classList.add('hidden'));
+            // Show selected content
+            if (appContents[tabId.replace('-content', '')]) {
+                document.getElementById(tabId).classList.remove('hidden');
+            } else {
+                appContents.dashboard.classList.remove('hidden'); // Default
+            }
+
+            // Update tab link styling
+            document.querySelectorAll('.app-tab-link').forEach(link => {
+                if (link.dataset.tab === tabId) {
+                    link.classList.add('text-indigo-600', 'font-medium');
+                    link.classList.remove('text-gray-700');
+                } else {
+                    link.classList.remove('text-indigo-600', 'font-medium');
+                    link.classList.add('text-gray-700');
+                }
+            });
+
+            // Load content for specific tabs
+            if (tabId === 'logs-content') loadLogs();
+            if (tabId === 'profile-content') loadProfile();
+        }
+
+        /**
+         * Sanitizes string input to prevent XSS.
+         * Addresses Test 3. (Feature: Input Forms)
+         * @param {string} str - The input string.
+         * @returns {string} The sanitized string.
+         */
+        function sanitize(str) {
+            if (!str) return "";
+            // Replaces < with &lt; and > with &gt;
+            return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        /**
+         * Validates password strength.
+         * Addresses Test 2. (Feature: Password Validation)
+         * @param {string} pw - The password to validate.
+         * @returns {boolean} True if the password is strong, false otherwise.
+         */
+        function validatePassword(pw) {
+            // Min 8 chars, 1 number, 1 special character
+            const re = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+            return re.test(pw);
+        }
+        
+        /**
+         * Validates email format.
+         * Addresses Test 15.
+         * @param {string} email - The email to validate.
+         * @returns {boolean} True if the email format is valid.
+         */
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        /**
+         * Gets the currently logged-in user from sessionStorage.
+         * (Feature: Session Management)
+         * @returns {string | null} The username or null if not logged in.
+         */
+        function getCurrentUser() {
+            return sessionStorage.getItem('currentUser');
+        }
+
+        // --- Crypto Functions (Web Crypto API) ---
+
+        /**
+         * Hashes a password using SHA-256.
+         * Addresses Test 7 (Data Confidentiality - Hashed Passwords).
+         * (Feature: Data Storage Layer)
+         * @param {string} password - The plaintext password.
+         * @returns {Promise<string>} A hex-encoded hash.
+         */
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            // Convert hash to a hex string
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        /**
+         * Generates a key from a password for AES-GCM.
+         * @param {string} password - The password to derive the key from.
+         * @returns {Promise<CryptoKey>} The derived CryptoKey.
+         */
+        async function getKey(password) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                "raw",
+                encoder.encode(password),
+                { name: "PBKDF2" },
+                false,
+                ["deriveKey"]
+            );
+            return crypto.subtle.deriveKey(
+                { name: "PBKDF2", salt: new Uint8Array(16), iterations: 100000, hash: "SHA-256" },
+                keyMaterial,
+                { name: "AES-GCM", length: 256 },
+                true,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        /**
+         * Encrypts text data using AES-GCM.
+         * Addresses Test 18 (Encrypted Record Check).
+         * (Feature: Encryption / Decryption)
+         * @param {string} text - The plaintext to encrypt.
+         * @param {string} password - The password to use for encryption.
+         * @returns {Promise<string>} Base64 encoded encrypted data (IV + ciphertext).
+         */
+        async function encryptData(text, password) {
+            const key = await getKey(password);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encoder = new TextEncoder();
+            const encodedText = encoder.encode(text);
+            
+            const encryptedBuffer = await crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                encodedText
+            );
+
+            // Combine IV and ciphertext for storage
+            const combined = new Uint8Array(iv.length + encryptedBuffer.byteLength);
+            combined.set(iv);
+            combined.set(new Uint8Array(encryptedBuffer), iv.length);
+            
+            // Return as base64 string for easy storage in JSON
+            return btoa(String.fromCharCode.apply(null, combined));
+        }
+
+        /**
+         * Decrypts AES-GCM encrypted data.
+         * @param {string} base64Encrypted - The Base64 encoded encrypted data.
+         * @param {string} password - The password to use for decryption.
+         * @returns {Promise<string>} The decrypted plaintext.
+         */
+        async function decryptData(base64Encrypted, password) {
+            const key = await getKey(password);
+            const combined = new Uint8Array(atob(base64Encrypted).split("").map(c => c.charCodeAt(0)));
+            
+            const iv = combined.slice(0, 12);
+            const ciphertext = combined.slice(12);
+
+            const decryptedBuffer = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                ciphertext
+            );
+            
+            const decoder = new TextDecoder();
+            return decoder.decode(decryptedBuffer);
+        }
+
+        // --- Authentication & Session Logic ---
+
+        /**
+         * Handles user registration.
+         * (Feature: User Registration & Login)
+         */
+        async function handleRegister(e) {
+            e.preventDefault();
+            try {
+                const username = document.getElementById('register-username').value;
+                const email = document.getElementById('register-email').value;
+                const pass = document.getElementById('register-password').value;
+                const confirmPass = document.getElementById('register-confirm-password').value;
+
+                // Test 20: Empty Field Submission
+                if (!username || !email || !pass || !confirmPass) {
+                    return showNotification("All fields are required.", "error");
+                }
+                
+                // Test 3: Special Character Input (XSS)
+                // This is a basic check. Sanitize() handles the output.
+                if (username.includes('<') || username.includes('>')) {
+                    return showNotification("Username cannot contain < or > characters.", "error");
+                }
+                const sanitizedUsername = sanitize(username);
+                
+                // Test 15: Email Validation
+                if (!validateEmail(email)) {
+                    return showNotification("Please enter a valid email address.", "error");
+                }
+                
+                // Test 2: Password Strength
+                if (!validatePassword(pass)) {
+                    return showNotification("Password is too weak. Requires 8+ chars, 1 number, 1 symbol.", "error");
+                }
+
+                // Test 13: Password Match Check
+                if (pass !== confirmPass) {
+                    return showNotification("Passwords do not match.", "error");
+                }
+
+                const db = getUserDB();
+                
+                // Test 11: Duplicate User Registration
+                if (db[sanitizedUsername]) {
+                    return showNotification("Username already exists.", "error");
+                }
+
+                // Test 7: Data Confidentiality (Hashing)
+                const passwordHash = await hashPassword(pass);
+                
+                // Store user
+                db[sanitizedUsername] = {
+                    email: email,
+                    passwordHash: passwordHash, // Stored hashed, not plaintext
+                    profile: { bio: "" },
+                    failedLogins: 0,
+                    lockedUntil: 0,
+                    secureNote: null // For Test 18
+                };
+                saveUserDB(db);
+
+                addLog(`User registration successful`, sanitizedUsername);
+                showNotification("Registration successful! Please log in.", "success");
+                showView('login');
+                document.getElementById('register-form').reset();
+                
+            } catch (err) {
+                console.error("Registration Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("An unexpected error occurred during registration.", "error");
+            }
+        }
+
+        /**
+         * Handles user login.
+         */
+        async function handleLogin(e) {
+            e.preventDefault();
+            try {
+                const usernameInput = document.getElementById('login-username').value;
+                const pass = document.getElementById('login-password').value;
+
+                // Test 20: Empty Field Submission
+                if (!usernameInput || !pass) {
+                    return showNotification("Username and password are required.", "error");
+                }
+
+                // Test 1: Input Validation – SQL Injection
+                // This is a basic client-side check. A real app uses parameterized queries on the server.
+                // We are simply rejecting inputs that look like an attack.
+                if (usernameInput.includes("'") || usernameInput.includes("=") || usernameInput.toLowerCase().includes(" or ")) {
+                    addLog(`Potential SQLi attempt: ${usernameInput}`, 'anonymous');
+                    return showNotification("Invalid username format. Input rejected.", "error");
+                }
+                
+                // Test 3: Sanitize input just in case, though we're not displaying it here.
+                const username = sanitize(usernameInput);
+
+                const db = getUserDB();
+                const user = db[username];
+
+                if (!user) {
+                    return showNotification("Invalid username or password.", "error");
+                }
+
+                // Test 16: Login Attempt Lockout
+                if (user.lockedUntil && user.lockedUntil > Date.now()) {
+                    const remaining = Math.round((user.lockedUntil - Date.now()) / 1000);
+                    return showNotification(`Account is locked. Try again in ${remaining} seconds.`, "error");
+                }
+
+                // Check hash
+                const inputHash = await hashPassword(pass);
+                
+                if (inputHash !== user.passwordHash) {
+                    user.failedLogins++;
+                    if (user.failedLogins >= 5) {
+                        // Lock for 1 minute for testing
+                        user.lockedUntil = Date.now() + (60 * 1000);
+                        addLog(`Account locked due to 5 failed logins`, username);
+                    }
+                    saveUserDB(db);
+                    return showNotification("Invalid username or password.", "error");
+                }
+
+                // --- Login Successful ---
+                user.failedLogins = 0;
+                user.lockedUntil = 0;
+                saveUserDB(db);
+
+                // (Feature: Session Management)
+                sessionStorage.setItem('currentUser', username);
+                // **NEVER DO THIS IN A REAL APP.** Storing password for on-page encryption demo.
+                sessionStorage.setItem('userPassword', pass); 
+
+                addLog("User login successful", username);
+                document.getElementById('welcome-user').textContent = `Welcome, ${username}`;
+                showView('app');
+                showAppTab('dashboard-content');
+                
+                // Test 5: Session Expiry
+                clearTimeout(sessionTimer);
+                sessionTimer = setTimeout(handleLogout, SESSION_TIMER_MS);
+                
+                document.getElementById('login-form').reset();
+
+            } catch (err) {
+                console.error("Login Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("An unexpected error occurred during login.", "error");
+            }
+        }
+
+        /**
+         * Handles user logout.
+         * Addresses Test 6. (Feature: Session Management)
+         */
+        function handleLogout() {
+            const user = getCurrentUser();
+            if (user) {
+                addLog("User logout", user);
+            }
+            
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('userPassword'); // Clear demo password
+            clearTimeout(sessionTimer);
+            
+            showView('login');
+            showNotification("You have been logged out.", "info");
+        }
+
+        /**
+         * Checks authentication state on page load.
+         * Addresses Test 4. (Feature: Session Management)
+         */
+        function checkAuth() {
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById('welcome-user').textContent = `Welcome, ${user}`;
+                showView('app');
+                showAppTab('dashboard-content');
+                
+                // Re-start session timer on page reload
+                clearTimeout(sessionTimer);
+                sessionTimer = setTimeout(handleLogout, SESSION_TIMER_MS);
+            } else {
+                showView('login');
+            }
+        }
+
+        // --- App Feature Logic ---
+
+        /**
+         * Handles the "Make Transaction" form.
+         * (Feature: Input Forms)
+         */
+        function handleTransaction(e) {
+            e.preventDefault();
+            try {
+                const amount = document.getElementById('trans-amount').value;
+                const desc = document.getElementById('trans-desc').value;
+
+                // Test 20: Empty Field Submission
+                if (!amount || !desc) {
+                    return showNotification("Amount and description are required.", "error");
+                }
+
+                // Test 12: Number Field Validation
+                if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+                    return showNotification("Please enter a valid positive amount.", "error");
+                }
+                
+                // Test 10: Input Length Validation (Handled by maxlength attribute)
+                // This is a good server-side check, but maxlength handles it on client.
+                if (desc.length > 100) {
+                     return showNotification("Description is too long (max 100 chars).", "error");
+                }
+
+                // Test 19: Input Encoding (Unicode Emoji)
+                // Modern JS handles this fine. We sanitize for XSS.
+                const sanitizedDesc = sanitize(desc);
+
+                // Simulate transaction
+                addLog(`Submitted transaction: ${sanitizedDesc} for $${amount}`, getCurrentUser());
+                showNotification("Transaction submitted successfully!", "success");
+                document.getElementById('transaction-form').reset();
+
+            } catch (err) {
+                console.error("Transaction Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("An error occurred submitting the transaction.", "error");
+            }
+        }
+        
+        /**
+         * Handles file upload validation.
+         * Addresses Test 8. (Feature: File Upload Validation)
+         */
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const allowedTypes = ['text/plain', 'application/pdf'];
+            const allowedExtensions = ['.txt', '.pdf'];
+            
+            const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            const fileName = sanitize(file.name);
+
+            if (allowedTypes.includes(file.type) && allowedExtensions.includes(fileExtension)) {
+                showNotification(`File "${fileName}" selected. (Ready for upload)`, "success");
+                addLog(`File selected: ${fileName}`, getCurrentUser());
+            } else {
+                // Test 8: File Upload Validation
+                showNotification(`Invalid file type. Only .txt and .pdf are allowed.`, "error");
+                addLog(`Invalid file upload attempt: ${fileName}`, getCurrentUser());
+                e.target.value = null; // Clear the input
+            }
+        }
+
+        /**
+         * Loads the user's profile data into the form.
+         * (Feature: Profile Update Page)
+         */
+        function loadProfile() {
+            try {
+                const db = getUserDB();
+                const user = db[getCurrentUser()];
+                if (user) {
+                    document.getElementById('profile-email').value = user.email;
+                    document.getElementById('profile-bio').value = user.profile.bio || ""; // Already sanitized on save
+                }
+            } catch (err) {
+                console.error("Profile Load Error:", err);
+                showNotification("Could not load profile data.", "error");
+            }
+        }
+        
+        /**
+         * Handles profile update form submission.
+         * Addresses Test 14 (Access Control).
+         */
+        function handleProfileUpdate(e) {
+            e.preventDefault();
+            try {
+                const email = document.getElementById('profile-email').value;
+                const bio = document.getElementById('profile-bio').value;
+                const currentUser = getCurrentUser();
+                
+                // Test 15: Email Validation
+                if (!validateEmail(email)) {
+                    return showNotification("Please enter a valid email.", "error");
+                }
+                
+                // Test 3: Input Sanitization
+                const sanitizedBio = sanitize(bio);
+                
+                // Test 14: Data Modification Attempt
+                // We can only modify the logged-in user (from session).
+                // There is no input field to specify *which* user to update.
+                // This prevents a user from changing another user's data.
+                const db = getUserDB();
+                if (db[currentUser]) {
+                    db[currentUser].email = email;
+                    db[currentUser].profile.bio = sanitizedBio; // Save the sanitized version
+                    saveUserDB(db);
+                    addLog("Profile updated", currentUser);
+                    showNotification("Profile updated successfully!", "success");
+                } else {
+                    showNotification("Could not find user to update.", "error");
+                }
+
+            } catch (err) {
+                console.error("Profile Update Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("An error occurred updating your profile.", "error");
+            }
+        }
+
+        /**
+         * Loads and displays the audit logs.
+         * (Feature: Audit / Activity Logs)
+         */
+        function loadLogs() {
+            try {
+                const logs = JSON.parse(localStorage.getItem(DB_LOGS_KEY)).reverse(); // Show newest first
+                const logsList = document.getElementById('logs-list');
+                logsList.innerHTML = ""; // Clear list
+                
+                if (logs.length === 0) {
+                    logsList.innerHTML = `<p class="text-gray-500">No logs found.</p>`;
+                    return;
+                }
+                
+                logs.forEach(log => {
+                    const logEl = document.createElement('div');
+                    logEl.className = 'text-sm text-gray-700 border-b border-gray-100 py-1';
+                    // Sanitize log data before displaying it
+                    logEl.textContent = `[${new Date(log.timestamp).toLocaleString()}] [${sanitize(log.user)}] ${sanitize(log.action)}`;
+                    logsList.appendChild(logEl);
+                });
+            } catch (err)
+ {
+                console.error("Log Load Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("Could not load audit logs.", "error");
+            }
+        }
+
+        /**
+         * Handles encryption of the secure note.
+         * Addresses Test 18.
+         */
+        async function handleEncryptNote() {
+            try {
+                const note = document.getElementById('encrypt-note').value;
+                // ** THIS IS A DEMO. NEVER STORE A PASSWORD IN SESSION STORAGE. **
+                const password = sessionStorage.getItem('userPassword'); 
+                const currentUser = getCurrentUser();
+
+                if (!note) {
+                    return showNotification("Note is empty.", "error");
+                }
+                if (!password || !currentUser) {
+                    return showNotification("Authentication error. Please log in again.", "error");
+                }
+
+                const encryptedNote = await encryptData(note, password);
+                
+                const db = getUserDB();
+                db[currentUser].secureNote = encryptedNote;
+                saveUserDB(db);
+                
+                addLog("Secure note encrypted and saved", currentUser);
+                showNotification("Note encrypted and saved! Check localStorage to see the unreadable data.", "success");
+                document.getElementById('encrypt-note').value = "";
+
+            } catch (err) {
+                console.error("Encrypt Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("An error occurred during encryption.", "error");
+            }
+        }
+        
+        /**
+         * Handles decryption of the secure note.
+         */
+        async function handleDecryptNote() {
+            try {
+                const password = sessionStorage.getItem('userPassword'); 
+                const currentUser = getCurrentUser();
+                
+                if (!password || !currentUser) {
+                    return showNotification("Authentication error. Please log in again.", "error");
+                }
+                
+                const db = getUserDB();
+                const encryptedNote = db[currentUser].secureNote;
+
+                if (!encryptedNote) {
+                    return showNotification("No encrypted note found to decrypt.", "info");
+                }
+
+                const decryptedNote = await decryptData(encryptedNote, password);
+                document.getElementById('encrypt-note').value = decryptedNote;
+                
+                addLog("Secure note decrypted", currentUser);
+                showNotification("Note loaded and decrypted.", "success");
+
+            } catch (err) {
+                console.error("Decrypt Error:", err);
+                // Test 9 & 17: Secure Error Handling
+                showNotification("Failed to decrypt note. Password may be incorrect.", "error");
+            }
+        }
+        
+        /**
+         * Forces a divide-by-zero error to test error handling.
+         * Addresses Test 9 & 17. (Feature: Error Handling)
+         */
+        function testErrorHandling() {
+            try {
+                // Force a TypeError, which is a common runtime error.
+                let a;
+                a.b = 10; // This will throw an error.
+            } catch (err) {
+                console.error("Test 17 Error (Controlled):", err);
+                // Test 9 & 17: Secure Error Handling
+                // We show a generic message, not the stack trace (e.g., "Cannot set property 'b' of undefined").
+                showNotification("A controlled error was successfully handled.", "info");
+            }
+        }
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initDB();
+            checkAuth(); // Test 4 is checked here
+
+            // View switching
+            document.getElementById('show-register').addEventListener('click', (e) => { e.preventDefault(); showView('register'); });
+            document.getElementById('show-login').addEventListener('click', (e) => { e.preventDefault(); showView('login'); });
+
+            // Forms
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('transaction-form').addEventListener('submit', handleTransaction);
+            document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
+            
+            // App Navigation
+            document.getElementById('logout-button').addEventListener('click', handleLogout); // Test 6
+            document.querySelectorAll('.app-tab-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showAppTab(e.target.dataset.tab);
+                });
+            });
+
+            // Features
+            document.getElementById('file-upload').addEventListener('change', handleFileUpload); // Test 8
+            document.getElementById('encrypt-button').addEventListener('click', handleEncryptNote); // Test 18
+            document.getElementById('decrypt-button').addEventListener('click', handleDecryptNote);
+            
+            // Testing
+            document.getElementById('test-error-button').addEventListener('click', testErrorHandling); // Test 9, 17
+        });
+
+    </script>
+</body>
+</html>
+
